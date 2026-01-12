@@ -1,0 +1,32 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+.ipynb_checkpoints/
+
+# System
+.DS_Store
+
+# Large Data & Artifacts
+runs/
+*.pt
+*.pth
+*.ckpt
+*.sif
+
+# Logs
+*.log
+*.err
+*.out
+slurm/runs/
+
+# Datasets (Keep structure, ignore large content)
+datasets/nuscenes_vlm/samples/
+datasets/nuscenes_vlm/processed/
+datasets/nuscenes_vlm/captions_inclusive.json
+# Keep config/metadata jsons if they are small, but captions_inclusive is likely large.
+# Let's keep small jsons.

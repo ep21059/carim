@@ -1,0 +1,99 @@
+/* Global Theme: Dark & Dynamic */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=JetBrains+Mono:wght@400;700&display=swap');
+
+/* Main Background - Deep Graphite to Black Gradient */
+.stApp {
+    background: linear-gradient(135deg, #0e1117 0%, #161b22 100%);
+    color: #e6edf3;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Sidebar Styling */
+section[data-testid="stSidebar"] {
+    background-color: #0d1117;
+    border-right: 1px solid #30363d;
+}
+
+/* Headers */
+h1, h2, h3 {
+    font-family: 'Inter', sans-serif;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+h1 {
+    background: -webkit-linear-gradient(45deg, #00d2ff, #3a7bd5);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Card Container (Glassmorphism) */
+.result-card {
+    background: rgba(30, 35, 45, 0.6);
+    border: 1px solid rgba(128, 128, 128, 0.2);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.result-card:hover {
+    transform: translateY(-2px);
+    border-color: #3b82f6;
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Score Badge */
+.score-badge {
+    background: linear-gradient(90deg, #ff416c, #ff4b2b);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: bold;
+    font-size: 0.9em;
+    box-shadow: 0 2px 4px rgba(255, 65, 108, 0.3);
+}
+
+/* Element Tags */
+.element-tag {
+    background: rgba(56, 189, 248, 0.1);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.85em;
+    margin-right: 6px;
+    margin-bottom: 6px;
+    display: inline-block;
+}
+
+/* Highlighted Match Tag */
+.element-tag.matched {
+    background: rgba(255, 65, 108, 0.15);
+    color: #ff8a9e;
+    border: 1px solid rgba(255, 65, 108, 0.5);
+    font-weight: 600;
+}
+
+/* Video Player Slider Override */
+div[data-testid="stSlider"] > div {
+    cursor: pointer;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #0d1117;
+}
+::-webkit-scrollbar-thumb {
+    background: #30363d;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #58a6ff;
+}
