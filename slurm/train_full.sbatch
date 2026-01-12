@@ -15,6 +15,7 @@ singularity exec --nv \
   /home/ryoc1220/carim_ver1/carim_qwen.sif \
   bash -c '
   export PYTHONPATH=/workspace:$PYTHONPATH
+  export CUDA_LAUNCH_BLOCKING=1
   export TOKENIZERS_PARALLELISM=false
   cd /workspace
   
@@ -29,6 +30,6 @@ singularity exec --nv \
     --elements_path datasets/nuscenes_vlm/captions_elements.json \
     --save_path runs/carim_text_model_full.pt \
     --epochs 5 \
-    --batch_size 16 \
+    --batch_size 48 \
     --lr 2e-5
 '
