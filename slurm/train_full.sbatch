@@ -31,5 +31,6 @@ singularity exec --nv \
     --save_path runs/carim_text_model_full.pt \
     --epochs 5 \
     --batch_size 48 \
+    --num_workers 0 \
     --lr 2e-5
 '
