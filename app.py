@@ -455,76 +455,59 @@ def main():
         end_idx = start_idx + page_size
         current_scenes = scene_ids[start_idx:end_idx]
         
-        for i, sid in enumerate(current_scenes):
-            frames = scene_map[sid]
-            if not frames: continue
+        # Grid Layout (2 Columns)
+        rows = [current_scenes[i:i+2] for i in range(0, len(current_scenes), 2)]
+        
+        for row_scenes in rows:
+            cols = st.columns(2)
             
-            with st.container():
-                # Card Header
-                st.markdown(f"""
-                <div class="result-card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <h3 style="margin: 0; color: #fff;">🎬 Scene: {sid}</h3>
-                        <span class="element-tag" style="background: rgba(255, 255, 255, 0.1); color: #ddd;">{len(frames)} Frames</span>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-
-                c1, c2 = st.columns([1.6, 1])
-                
-                with c1:
-                    # Render Video Player
-                    # Capture current frame path
-                    current_path_browse = render_video_player(sid, scene_map, unique_id=f"browse_{i}")
+            for i, sid in enumerate(row_scenes):
+                with cols[i]:
+                    frames = scene_map[sid]
+                    if not frames: continue
                     
-                with c2:
-                    # Dynamic Elements & Metadata
-                    if current_path_browse:
-                        target_path = current_path_browse
-                        st.caption("✅ 表示中フレーム (Current Frame)")
-                    else:
-                        # Fallback (Playing or Init)
-                        target_path = frames[len(frames)//2][1]
-                        st.caption("▶ 再生中 / 代表フレーム (Representative)")
-
-                    # 1. Metadata
-                    b_basename = os.path.basename(target_path)
-                    b_caption = caption_lookup.get(b_basename, "No caption.")
-                    b_meta = get_metadata(target_path, b_caption)
-                    
-                    st.markdown(f"**場所**: `{b_meta['Location']}`")
-                    st.markdown(f"**天候**: `{b_meta['Weather']}`")
-                    st.markdown(f"**時間**: `{b_meta['Time']}`")
-
-                    st.markdown("---")
-
-                    # 2. Elements
-                    scene_elements = []
-                    # Try exact match first
-                    for k in elements_data.keys():
-                        if b_basename in k:
-                            scene_elements = elements_data[k]
-                            break
-                    
-                    if scene_elements:
-                        st.markdown("**検出要素 (Elements):**")
-                        html_tags = ""
-                        # Deduplicate
-                        scene_elements = list(dict.fromkeys(scene_elements))
-                        for e in scene_elements:
-                             # Use styled tags
-                             html_tags += f"<span class='element-tag'>{e}</span>"
-                        st.markdown(html_tags, unsafe_allow_html=True)
-                    else:
-                        st.info("No elements for this frame.")
-
-                    # 3. Reference Caption
-                    with st.expander("Caption (Reference)"):
-                        st.write(b_caption)
-                
-                # Spacer instead of divider
-                st.markdown("<div style='margin-bottom: 30px;'></div>", unsafe_allow_html=True)
-                
+                    # Card Container
+                    with st.container():
+                        # Header
+                        st.markdown(f"""
+                        <div style="background: rgba(255, 255, 255, 0.05); border-radius: 8px 8px 0 0; padding: 10px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <h4 style="margin: 0; font-family: monospace;">{sid}</h4>
+                                <span style="font-size: 0.8em; background: #333; padding: 2px 6px; border-radius: 4px;">{len(frames)} F</span>
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        
+                        # Body (Stacked: Video -> Info)
+                        # Video
+                        current_path_browse = render_video_player(sid, scene_map, unique_id=f"browse_{sid}")
+                        
+                        # Info
+                        if current_path_browse:
+                            target_path = current_path_browse
+                        else:
+                            target_path = frames[len(frames)//2][1]
+                            
+                        b_basename = os.path.basename(target_path)
+                        b_caption = caption_lookup.get(b_basename, "No caption.")
+                        b_meta = get_metadata(target_path, b_caption)
+                        
+                        # Metadata Badges
+                        st.markdown(f"""
+                        <div style="padding: 10px; background: rgba(0, 0, 0, 0.2); border-radius: 0 0 8px 8px; border: 1px solid rgba(255, 255, 255, 0.1); border-top: none;">
+                            <div style="display: flex; gap: 10px; font-size: 0.9em; margin-bottom: 5px;">
+                                <span>📍 {b_meta['Location']}</span>
+                                <span>☀ {b_meta['Weather']}</span>
+                                <span>🕒 {b_meta['Time']}</span>
+                            </div>
+                            <div style="font-size: 0.8em; color: #aaa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{b_caption}">
+                                {b_caption[:60]}...
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        
+                        # Spacer
+                        st.write("")
         st.stop()
 
     # ==========================
