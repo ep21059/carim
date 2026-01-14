@@ -472,8 +472,8 @@ def main():
                         st.markdown(f"""
                         <div style="background: rgba(255, 255, 255, 0.05); border-radius: 8px 8px 0 0; padding: 10px; border: 1px solid rgba(255, 255, 255, 0.1);">
                             <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <h4 style="margin: 0; font-family: monospace;">{sid}</h4>
-                                <span style="font-size: 0.8em; background: #333; padding: 2px 6px; border-radius: 4px;">{len(frames)} F</span>
+                                <h4 style="margin: 0; font-family: monospace; font-size: 1rem;">{sid}</h4>
+                                <span style="font-size: 0.8em; background: #eee; color: #444; padding: 2px 8px; border-radius: 4px; border: 1px solid #ddd;">{len(frames)} Frames</span>
                             </div>
                         </div>
                         """, unsafe_allow_html=True)
