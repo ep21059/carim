@@ -524,6 +524,8 @@ def main():
                 
                 # Spacer instead of divider
                 st.markdown("<div style='margin-bottom: 30px;'></div>", unsafe_allow_html=True)
+                
+        st.stop()
 
     # ==========================
     #      SEARCH MODE
