@@ -1,76 +1,99 @@
 # CARIM: Context-Aware Retrieval of Images for Merging
+
+![CARIM Viewer](https://via.placeholder.com/800x400?text=CARIM+Viewer+Dashboard)
+
 ## 概要
-CARIM (Context-Aware Retrieval of Images for Merging) は、自律走行車の走行シーン画像（nuScenesデータセット等）に対して、自然言語クエリによる高精度な検索を行うためのシステムです。
-最新の VLM (Qwen-VL) と LLM (Qwen-2) を組み合わせた **Text-to-Text Architecture** を採用し、従来の画像-テキスト対照学習（CLIP等）よりも詳細な「文脈（Context）」を考慮した検索を可能にします。
+CARIM (Context-Aware Retrieval of Images for Merging) は、自律走行車の走行シーン画像（nuScenesデータセット）に対して、自然言語クエリによる高精度な検索を行うためのシステムです。
 
-## 特徴
-- **Text-to-Text Retrieval**: 画像そのものではなく、画像から生成・抽出された「テキスト要素（Elements）」に対して検索を行います。
-- **Inclusive Text Matching**: クエリに含まれるキーワードが、シーン内の要素にどれだけ含まれているかを評価する独自スコアリング。
-- **Adaptive Negative Injection (ANI)**: 学習時に動的に「似て非なる」ネガティブクエリを生成し、微細な違い（"Pedestrian" vs "Rider" 等）を識別できるようにします。
-- **Interactive Viewer**: 検索結果を動画として閲覧できる Web UI (Streamlit製)。
+最新の **Text-to-Text Architecture** (Qwen-1.5B) を採用し、画像から抽出された「テキスト要素（Elements）」とクエリの意味的類似度を学習することで、"A red car crossing intersection at night" のような複雑な文脈検索を実現します。
 
-## 環境構築
-本プロジェクトは Singularity コンテナ上で動作することを前提としています。
+## 主な機能 (Ver 1.0)
+- **Natural Language Search**: 自然言語でのシーン検索（例: "Pedestrian crossing in rain"）。
+- **Browse & Filter**: 天候や時間帯によるフィルタリングと、グリッドビューでの全シーン閲覧。
+- **Video Playback**: タイムラインスライダー付きの動画プレイヤーで、シーンの前後関係を確認可能。
+- **Explainability (XAI)**: なぜそのシーンがヒットしたのか、どの単語（要素）が寄与したかを可視化 ("Why This Match?")。
+- **High Stability**: 14.5k件のフルデータセットに対する安定した検索インデックス。
 
-### 1. Singularity イメージのビルド
+---
+
+## クイックスタート (Viewerの利用)
+
+学習済みモデルを使用して、検索Viewerをすぐに起動できます。
+
+### 1. Viewerジョブの投入
 ```bash
-./singularity/build_sif.sh
-# または
-sudo singularity build carim_qwen.sif singularity/carim_qwen.def
+sbatch slurm/run_viewer_trained.sbatch
 ```
 
-### 2. データセット準備
-nuScenesデータセットを使用します。以下のスクリプトで物理画像を収集し、キャプション生成パイプラインを実行します。
+### 2. アクセス手順 (ポート転送)
+ジョブが起動したら、ローカルPC（手元のPC）のターミナルで以下を実行し、SSHポート転送を行います。
+※ `NODE_IP` は `runs/CARIM/viewer_trained_*.out` ログファイルで確認してください（例: `192.168.170.xx`）。
 
 ```bash
-# 1. 画像パスのリスト作成
+# ローカルPCで実行
+ssh -L 9991:NODE_IP:9991 ryoc1220@mprg.cs.chubu.ac.jp
+```
+
+ブラウザで **[http://localhost:9991](http://localhost:9991)** にアクセスします。
+
+---
+
+## 学習パイプライン (Training Pipeline)
+
+ゼロからデータセットを作成し、モデルを学習する手順です。
+
+### 1. データセット準備
+VLM (Qwen-VL) によるキャプション生成と、LLMによる要素抽出を行います。
+```bash
+# 画像パスリスト作成
 python3 scripts/build_dataset_from_images.py
 
-# 2. VLMによるキャプション生成 (Qwen-VL)
+# キャプション生成 & 要素抽出 & マージ (Slurmジョブ)
 sbatch slurm/generate_full.sbatch
-
-# 3. LLMによる要素抽出 (Refinement)
 sbatch slurm/refine_full.sbatch
-
-# 4. データセットのマージ (train.jsonl の作成)
 sbatch slurm/merge_full.sbatch
 ```
+-> `datasets/nuscenes_vlm/processed/train_full.jsonl` が作成されます。
 
-## 学習 (Training)
-モデルの学習は `train.py` で行います。Slurm環境での実行を推奨します。
-
+### 2. モデル学習 (Single-GPU)
+安定性を重視し、シングルGPU構成 (A6000) で学習を行います。
 ```bash
 sbatch slurm/train_full.sbatch
 ```
-- **入力**: `train_full.jsonl` (VLMキャプションと要素リストを含む)
+- **設定**: Batch Size 24, Epochs 5
 - **出力**: `runs/carim_text_model_full.pt`
-- **設定**: 3-4 GPUでの分散学習 (DataParallel) をサポート。
 
-詳細は [実装の詳細と学習戦略](docs/architecture.md) を参照してください。
-
-## インデックス作成 (Indexing)
-学習済みモデルを使用して、全データセットのテキスト要素をベクトル化し、検索用のインデックスを作成します。
-
+### 3. インデックス作成
+全データの検索インデックスを構築します。
 ```bash
 sbatch slurm/index_full.sbatch
 ```
 - **出力**: `datasets/nuscenes_vlm/processed/text_index_full.pt`
 
-## Viewerの起動
-学習済みモデルとインデックスを使用して、検索Viewerを起動します。
-
-```bash
-sbatch slurm/run_viewer_trained.sbatch
-```
-起動後、ブラウザで `http://localhost:8501` (ポートは設定依存) にアクセスしてください。
+---
 
 ## ディレクトリ構成
-- `app.py`: Viewer アプリケーション (Streamlit)
-- `train.py`: 学習スクリプト
-- `models/`: モデル定義 (CARIMScorer, TextEncoder)
-- `scripts/`: データ処理・補助スクリプト
-- `slurm/`: ジョブ投入用スクリプト
-- `docs/`: ドキュメント
+
+```text
+carim_ver1/
+├── app.py                # Viewer アプリケーション (Streamlit)
+├── train.py              # 学習スクリプト
+├── models/               # モデル定義
+│   └── carim_scorer.py   # CARIMScorer (Qwen base)
+├── scripts/              # ユーティリティ
+│   └── indexer.py        # インデックス作成スクリプト
+├── slurm/                # Slurmジョブスクリプト
+│   ├── train_full.sbatch
+│   ├── index_full.sbatch
+│   └── run_viewer_trained.sbatch
+└── docs/                 # ドキュメント
+```
+
+## 技術仕様
+- **Base Model**: Qwen/Qwen2-1.5B-Instruct
+- **Embedding Dim**: 256 (Projected from 1536)
+- **Loss Function**: Custom Contrastive Loss with Adaptive Negative Injection (ANI)
+- **Framework**: PyTorch, Hugging Face Transformers, Streamlit
 
 ## ライセンス
 Proprietary / Research Use Only
