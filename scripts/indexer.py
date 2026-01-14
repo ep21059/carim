@@ -24,6 +24,7 @@ def main():
     print(f"Loading elements from {input_file}...")
     data = {}
     if input_file.endswith(".jsonl"):
+        with open(input_file, 'r') as f:
             for line in f:
                 item = json.loads(line)
                 # Basenameをキーとして使用（Viewerのロジックと一致させるため）
