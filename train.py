@@ -85,16 +85,11 @@ def main():
     # 注意: Text-to-Text 学習には Projection Layer の有効化が必要
     model = CARIMScorer(text_encoder_name=qwen_model_name, embed_dim=256, use_projection=True).to(device)
     
-    # DataParallel対応
-    if torch.cuda.device_count() > 1:
-        print(f"Using {torch.cuda.device_count()} GPUs with DataParallel!")
-        model = torch.nn.DataParallel(model)
+    # DataParallel disabled for stability
+    # if torch.cuda.device_count() > 1: ...
         
-    # カスタムメソッド（compute_similarityなど）のために、ラップされたモデルの中身にもアクセスできるようにする
-    # compute_similarity はモデル経由(model.module)で呼ぶことも可能だが、計算自体は軽量(内積)なので
-    # Encoding処理のみを並列化すれば十分。
-    
-    raw_model = model.module if isinstance(model, torch.nn.DataParallel) else model
+    # Single GPU mode
+    raw_model = model
 
     # logit_scale = torch.nn.Parameter(torch.tensor(4.6052)).to(device) # initial temperature ~ 100
     # To be safe with device placement:
@@ -142,10 +137,11 @@ def main():
                 print(f"CRITICAL: Query ID Out of Bounds! Max={q_inputs.input_ids.max()}, Min={q_inputs.input_ids.min()}")
                 continue # Skip this batch
                 
-            # model(...) を呼んで DataParallel の forward (encode_text のエイリアス) をトリガー
+            # エンコード (DataParallelなし、直接呼び出しでもOKだが、forward=encode_text なのでそのまま)
             query_emb = model(q_inputs.input_ids.long(), q_inputs.attention_mask)
             
-            # 2. 要素(Keys)のエンコード - マルチGPU向けにバッチ化
+            # 2. 要素(Keys)のエンコード
+            # マルチGPUではなくても、バッチ化してエンコードするのは効率が良いのでロジックは維持
             B = len(queries)
             max_elements = 32
             
@@ -272,8 +268,8 @@ def main():
              print(f"Epoch {epoch} | No valid batch processed | Total skipped={dataset.skipped_count}")
 
     # DataParallel使用時は、元モデルのステート辞書を保存（キーの 'module.' 接頭辞回避）
-    final_model = model.module if isinstance(model, torch.nn.DataParallel) else model
-    torch.save(final_model.state_dict(), args.save_path)
+    # 保存
+    torch.save(model.state_dict(), args.save_path)
     print(f"Model saved to {args.save_path}")
 
 if __name__ == "__main__":
