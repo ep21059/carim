@@ -1,12 +1,16 @@
 #!/bin/bash
 #SBATCH --job-name=IndexFull
-#SBATCH --partition=a6000_ada
+#SBATCH --partition=a6000
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem-per-cpu=32G
 #SBATCH --time=02:00:00
 #SBATCH --output=/home/ryoc1220/carim_ver1/runs/index_full_%j.out
 #SBATCH --error=/home/ryoc1220/carim_ver1/runs/index_full_%j.err
+
+#SLACK: notify-start
+#SLACK: notify-end
+#SLACK: notify-error
 
 set -e
 
