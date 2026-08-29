@@ -6,6 +6,10 @@
 #SBATCH --time=00:10:00
 #SBATCH --mem=8G
 
+#SLACK: notify-start
+#SLACK: notify-end
+#SLACK: notify-error
+
 python3 scripts/merge_full_dataset.py \
     --train_jsonl datasets/nuscenes_vlm/processed/train.jsonl \
     --captions_json datasets/nuscenes_vlm/captions_inclusive.json \

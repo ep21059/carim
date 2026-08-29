@@ -1,0 +1,88 @@
+# Task: Re-implement CARIM with Qwen
+
+- [x] Planning & Design <!-- id: 0 -->
+    - [x] Inspect existing datasets (dmd_carim) <!-- id: 1 -->
+    - [x] Create implementation_plan.md <!-- id: 2 -->
+    - [x] Confirm architecture with User (Qwen size, Viewer tech) <!-- id: 3 -->
+- [ ] **Dataset Rebuild (User Request)** <!-- id: rebuild -->
+    - [x] Locate consistent source (Physical Images: 14,540) <!-- id: rebuild_1 -->
+    - [x] Delete inconsistent artifacts <!-- id: rebuild_2 -->
+    - [x] Create `train.jsonl` from physical images (Done 21:09) <!-- id: rebuild_3 -->
+    - [x] Generate Captions (VLM) for ~14k images (Completed Job 11955) <!-- id: rebuild_4 -->
+    - [x] **Partial Pipeline Execution (6k samples)**
+        - [x] Refine Elements (Job 11927) <!-- id: par_1 -->
+        - [x] Create Partial Dataset (`train_partial.jsonl`) <!-- id: par_2 -->
+        - [x] Train Model on Partial Data (Job 11953) <!-- id: par_3 -->
+        - [x] Create Index on Partial Data (Job 11954) <!-- id: par_4 -->
+        - [x] Launch Viewer on Partial Data (Job 11965/67) <!-- id: par_5 -->
+    - [x] Extract Elements (LLM) for Full Dataset (Done Job 11976) <!-- id: rebuild_5 -->
+    - [x] **Merge VLM Captions into `train.jsonl`** (Done Job 11986) <!-- id: rebuild_merge -->
+    - [x] **Full Model Training (Text-to-Text)** (Completed Job 12158) <!-- id: rebuild_train -->
+    - [x] **Re-Index Full Dataset** (Completed Job 12161) <!-- id: rebuild_6 -->
+- [/] Data Preparation <!-- id: 4 -->
+    - [x] Setup Environment via Singularity (`.def` creation) <!-- id: 5 -->
+    - [x] Build Singularity Container (`.sif`) <!-- id: 6 -->
+    - [/] Generate Dense Captions using Qwen-VL (via Slurm Job) <!-- id: 7 -->
+    - [ ] Build Offline Embedding storage structure (via Slurm Job) <!-- id: 8 -->
+- [/] Model Implementation <!-- id: 8 -->
+    - [x] Implement Qwen-based Text Encoder <!-- id: 9 -->
+    - [x] Modify CARIM Model (Fixed Syntax Error) <!-- id: 10 -->
+    - [x] Create Training Loop (Updated train.py) <!-- id: 11 -->
+    - [x] Verify Training Loop on Calibration Data <!-- id: 15 -->
+    - [x] Train on 50-sample subset (Validation) <!-- id: 16 -->
+    - [x] Train on 50-sample subset (Validation) <!-- id: 16 -->
+    - [x] Verify Viewer with Trained Model (50 samples) <!-- id: 17 -->
+    - [x] Train on Intermediate Data (500 samples) <!-- id: 18 -->
+    - [ ] **Implementation Phase 2: Text-to-Text Architecture**
+    - [ ] **Data Preparation (LLM)**
+        - [x] Create `scripts/refine_captions_llm.py` to extract elements <!-- id: 20 -->
+        - [x] **Fix: Exclude Negative Constraints (no pedestrians) from extraction** <!-- id: 20b -->
+        - [/] Run refinement job to generate `captions_elements.json` (Progress: ~4% as of 11:20) <!-- id: 21 -->
+    - [ ] **Model Architecture**
+        - [ ] Unify `models/carim_scorer.py` to Text-to-Text Attention mechanism <!-- id: 22 -->
+        - [ ] Verify `models/text_encoder.py` supports batch encoding <!-- id: 23 -->
+    - [ ] **Training Loop Update (Text-to-Text)**
+        - [x] Update `train.py` to train Projection Layer using Contrastive Loss between Query and Elements <!-- id: 24 -->
+        - [x] **Implement Adaptive Negative Injection (ANI)** <!-- id: 27 -->
+            - [x] Build Global Negative Pool (Unique Elements) <!-- id: 27a -->
+            - [x] Implement Semantic Filter (Embedding Similarity) <!-- id: 27b -->
+            - [x] Implement Synthetic Query Generation (Hard/Easy Negatives) <!-- id: 27c -->
+            - [x] Update `train.py` to minimize score for Mixed Queries <!-- id: 27d -->
+            - [x] **Verify Scoring Logic (MaxSim + Avg)** <!-- id: 28 -->
+            - [x] **Verify Loss Function (L_pos, L_neg, L_self)** <!-- id: 29 -->
+            - [x] **Verify Score Ratio (3/4 matches)** <!-- id: 30 -->
+    - [ ] **Post-Training Evaluation & Tuning** <!-- id: 31 -->
+        - [ ] **Evaluate Score Histogram**: Verify separation between Pos (0.95+) and Neg (0.75). <!-- id: 31a -->
+        - [ ] **Verify Attribute Discriminability**: Test "Red Car" vs "Blue Car" (Embedding Filter check). <!-- id: 31b -->
+        - [ ] **Monitor Loss Balance**: Check if L_pos is sufficient to keep positive scores high. <!-- id: 31c -->
+    - [x] **Indexing System Update** <!-- id: 3 -->
+    - [x] Modify `scripts/indexer.py` to index text elements. <!-- id: 3a -->
+    - [x] Run indexing on initial refined captions. <!-- id: 3b -->
+    - [x] **Training Loop Update (Text-to-Text)** <!-- id: 24_header -->
+    - [x] Update `train.py` to train Projection Layer using Contrastive Loss between Query and Elements (Single GPU Setup) <!-- id: 24 -->
+    - [x] **Full Model Training (Text-to-Text)** (Completed Job 12158) <!-- id: rebuild_train -->
+- [x] **Viewer & Inference Update** <!-- id: 4 -->
+    - [x] **Viewer & Inference Update** <!-- id: 4 -->
+        - [x] Modify `app.py` for Text-to-Text retrieval. <!-- id: 4a -->
+    - [x] Launch updated viewer and verify. (Started Job 12162) <!-- id: 4b -->
+        - [x] Verify Viewer with Intermediate Model (500 samples) <!-- id: 19 -->
+            - [x] Implemented Video Playback with Slider <!-- id: 20 -->
+            - [x] Added Context Filters (Time/Weather) <!-- id: 21 -->
+            - [x] Refined UX (Dynamic Captions, Match Indicators) <!-- id: 22 -->
+            - [x] Fixed `UnboundLocalError: tokenizer` <!-- id: 23 -->
+            - [x] Fixed Duplicate Elements Display <!-- id: 24 -->
+            - [x] Added "Why This Match?" (Token Heatmap) Analysis <!-- id: 25 -->
+            - [x] Verified Implementation against Paper Methodology (Steps 1-3) <!-- id: 26 -->
+            - [x] **UI Polish (Japanese, Dark Mode, Cards)**
+            - [x] **Fix: Parallel File Access (JSON corruption)**
+            - [x] **Feature: Matched Frame Thumbnail**
+            - [x] **UI Refinement (Header, Metadata, Layout)**
+
+
+
+
+
+
+- [x] Viewer Development <!-- id: 12 -->
+    - [x] Build Backend (Search API) <!-- id: 13 -->
+    - [x] Build Frontend (app.py) <!-- id: 14 -->

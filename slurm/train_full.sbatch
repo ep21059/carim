@@ -8,6 +8,10 @@
 #SBATCH --output=/home/ryoc1220/carim_ver1/runs/train_full_%j.out
 #SBATCH --error=/home/ryoc1220/carim_ver1/runs/train_full_%j.err
 
+#SLACK: notify-start
+#SLACK: notify-end
+#SLACK: notify-error
+
 set -e
 
 singularity exec --nv \

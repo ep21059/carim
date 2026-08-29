@@ -30,3 +30,25 @@ datasets/nuscenes_vlm/processed/
 datasets/nuscenes_vlm/captions_inclusive.json
 # Keep config/metadata jsons if they are small, but captions_inclusive is likely large.
 # Let's keep small jsons.
+
+# --- kanazawa_ver は独立リポジトリへ分離した（2026-08-29）---
+# 実体は ~/projects/kanazawa-carim/ (github.com/ep21059/kanazawa-carim)
+# ここに残っているのはそこへの symlink
+/kanazawa_ver
+
+# --- 環境・キャッシュ ---
+.venv/
+.cache/
+
+# --- コンテナは ~/containers/ へ ---
+/singularity/
+*.def
+
+# --- データ実体は ~/data/carim/ へ ---
+/datasets/kanazawa/
+/datasets/nuscenes_vlm/captions_elements.json
+/datasets/nuscenes_vlm/captions_elements_partial_6k.json
+/datasets/nuscenes_vlm/captions_inclusive_snapshot.json
+
+# --- フォント（11MB）---
+*.ttf
