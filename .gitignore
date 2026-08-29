@@ -52,3 +52,7 @@ datasets/nuscenes_vlm/captions_inclusive.json
 
 # --- フォント（11MB）---
 *.ttf
+
+# --- 実験の成果物（2026-08-29 の再編でプロジェクト直下に移動）---
+# checkpoint / 出力 / ログはここに入る。コードだけを追跡する。
+/experiments
