@@ -12,7 +12,7 @@ venv/
 .DS_Store
 
 # Large Data & Artifacts
-runs/
+/runs
 *.pt
 *.pth
 *.ckpt
@@ -44,11 +44,11 @@ datasets/nuscenes_vlm/captions_inclusive.json
 /singularity/
 *.def
 
-# --- データ実体は ~/data/carim/ へ ---
-/datasets/kanazawa/
-/datasets/nuscenes_vlm/captions_elements.json
-/datasets/nuscenes_vlm/captions_elements_partial_6k.json
-/datasets/nuscenes_vlm/captions_inclusive_snapshot.json
+# --- データ実体は ~/data/carim/ へ（ローダの .py だけ追跡する）---
+/datasets/kanazawa
+/datasets/nuscenes_vlm/samples
+/datasets/nuscenes_vlm/processed
+/datasets/nuscenes_vlm/captions_*.json
 
 # --- フォント（11MB）---
 *.ttf
